@@ -247,7 +247,7 @@ fi
 # Purge old backups, only if current backup succeeded
 if [ "$out_rc" = 0 ]; then
     info "purging old backups"
-    find $PGBK_BACKUP_DIR -maxdepth 1 -mtime +$PGBK_PURGE -exec rm -rf '{}' ';'
+    find $PGBK_BACKUP_DIR -maxdepth 2 -mtime +$PGBK_PURGE -exec rm -rf '{}' ';'
     if [ $? != 0 ]; then
 	die "could not purge all old backups"
     fi
