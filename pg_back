@@ -201,6 +201,8 @@ if [ $? != 0 ]; then
     out_rc=1
 fi
 
+missing_db=0
+
 for db in $PGBK_DBLIST
 do
     # Do not dump excluded databases
@@ -212,7 +214,8 @@ do
     # checking if db exists
     echo $PGBK_DBLIST_FULL | grep -w $db >/dev/null 2>&1
     if [ $? -ne 0 ]; then
-      info "database '${db}' does not exists, ignoring"
+      warn "database '${db}' does not exists, ignoring"
+      missing_db=$((missing_db+1))
       continue
     fi
 
@@ -230,6 +233,8 @@ do
     if [ $rc != 0 ]; then
 	out_rc=1
 	error "pg_dump of database \"$db\" failed"
+    else
+        info "pg_dump of database \"$db\" success"
     fi
 done
 
@@ -240,6 +245,12 @@ if [ "${PG_HASPAUSE}" = "1" ]; then
     if [ $? != 0 ]; then
         die "could not resume replication replay"
     fi
+fi
+
+# notify if some db are not present
+if [ ${missing_db} -gt 0 ]; then
+  warn "${missing_db} db are missing"
+  out_rc=1
 fi
 
 [ -z "$out_rc" ] && out_rc=0
